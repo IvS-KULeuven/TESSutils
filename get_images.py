@@ -14,7 +14,7 @@ def download_tesscuts_single(TIC,
                              max_tries_MASTquery=3):
     '''
     Purpose:
-        Downoad the TESS cut for all the available secors given the TIC number
+        Downoad the TESS cut for all the available sectors given the TIC number
     
     Args:
         - TIC: string
