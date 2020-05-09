@@ -182,8 +182,8 @@ def download_tesscuts(TICs, nThreads=1, **kwargs):
         download_tesscuts(['130415266','324123409'])
 
         # Do multiple TIC numbers in parallel
-        TICs = '130415266','324123409']
-        download_tesscuts([TICs, nThreads=10)
+        TICs = ['130415266','324123409']
+        download_tesscuts(TICs, nThreads=10)
 
         # Save images of 100 by 100 pixels
         download_tesscuts('130415266', imsize=100)
