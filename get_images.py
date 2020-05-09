@@ -37,7 +37,7 @@ def download_tesscuts_single(TIC,
             Maximum number of attempts to save a same FITS image
             
         - max_tries_MASTquery: int
-            Maximum number of attempts to querry MAST for a particular TIC
+            Maximum number of attempts to querry MAST for a particular TIC      
     '''
 
     # Ensure TIC is a string (and not a number)
@@ -168,7 +168,13 @@ def download_tesscuts(TICs, nThreads=1, **kwargs):
 
         kwargs:
             kwargs passed to `download_tesscuts_single()`
-            
+    
+    Outputs:
+        TESS cuts saved as FITS files under the respective name: f"tess{TIC}_sec{SECTOR}.fits"
+        
+        For instancce, TIC='2831936' consists of only 2 TESS sectors: 8 and 9. Therefore, the
+        output files will be: tess2831936_sec8.fits and tess2831936_sec9.fits
+
     Examples:
         
         # Save images to the current work directory
