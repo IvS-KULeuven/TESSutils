@@ -243,10 +243,22 @@ if __name__ == '__main__':
     # Directory where to store the TESS images
     outputdir=Path('tpfs')
 
+    # Name pattern to store images
+    name_pattern='tess{TIC}_sec{SECTOR}.fits'
+
     # Catalog containing the TIC numbers to download
     cat = '/STER/stefano/work/catalogs/TICv8_2+sectors/TIC_OBcandidates_FEROS_2+sectors_bright.csv'
     TICs = pd.read_csv(cat, usecols=['ID'])
+
+    # Skip TICs already downloaded
+    files = [file.name for file in outputdir.glob(name_pattern.format(TIC='*', SECTOR='*'))]
+    skip = pd.DataFrame({'file':files})
+    return_TIC = lambda name: re.match(name_pattern.format(TIC='(\d+)', SECTOR='\d+'),name).group(1)
+    skip['ID'] = skip['file'].apply(return_TIC).astype(int)
+    TICs = TICs.merge(skip[['ID']], on='ID', how='outer', indicator=True).query('_merge == "left_only"')[['ID']] 
+
+    # Format as a list of strings
     TICs = TICs.astype(str).values.flatten().tolist()
 
     # Start the program
-    download_tesscuts(TICs, outputdir=outputdir, nThreads=1)
+    download_tesscuts(TICs, outputdir=outputdir, nThreads=1, name_pattern=name_pattern)
