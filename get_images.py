@@ -146,7 +146,7 @@ def download_tesscuts_single(TIC,
         while True:
             if counter > max_tries_save:
                 print(f'Skipped TIC = {TIC}: Maximum number of retries ({max_tries_save}) exceeded')
-                break
+                return
             try:
                 tpf.to_fits(outputname.as_posix(), overwrite=overwrite)
                 break
