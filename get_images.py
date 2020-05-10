@@ -9,9 +9,10 @@ def download_tesscuts_single(TIC,
                              outputdir=Path.cwd(),
                              imsize=20,
                              overwrite=False,
-                             max_tries=10,
-                             max_counter=5,
-                             max_tries_MASTquery=3):
+                             max_tries_download=10,
+                             max_tries_save=2,
+                             max_tries_query=3,
+                             name_pattern='tess{TIC}_sec{SECTOR}.fits'):
     '''
     Purpose:
         Downoad the TESS cut for all the available sectors given the TIC number
@@ -28,16 +29,22 @@ def download_tesscuts_single(TIC,
             Size in pixels if the square images to be downloaded.
         
         - overwrite: bool
-            If True, then overwrite the FITS images
+            If True, then overwrite the FITS images.
         
-        - max_tries: int
-            Maximum number of attempts to download a same TESS sector
+        - max_tries_download: int
+            Maximum number of attempts to download a same TESS sector.
             
-        - max_counter: int
-            Maximum number of attempts to save a same FITS image
+        - max_tries_save: int
+            Maximum number of attempts to save a same FITS image.
             
-        - max_tries_MASTquery: int
-            Maximum number of attempts to querry MAST for a particular TIC      
+        - max_tries_query: int
+            Maximum number of attempts to querry MAST for a particular TIC.   
+            
+        - name_pattern: str
+           Pattern use to name the files to be saved. The five charachters
+           {TIC} and the eight characters {SECTOR} are mandatory in the pattern
+           and will replaced for the TIC number and sector number,
+           respectively.
     '''
 
     # Ensure TIC is a string (and not a number)
@@ -59,8 +66,8 @@ def download_tesscuts_single(TIC,
     # Search MAST for Full Frame Images availables for TIC in question
     tries_query = 1
     while True:
-        if tries_query > max_tries_MASTquery:
-            print(f'Skipped TIC = {TIC}: Maximum number of MAST query retries ({max_tries_MASTquery}) exceeded')
+        if tries_query > max_tries_query:
+            print(f'Skipped TIC = {TIC}: Maximum number of MAST query retries ({max_tries_query}) exceeded')
             return
         try: 
             tesscuts = lk.search_tesscut(f'TIC {TIC}')
@@ -92,7 +99,7 @@ def download_tesscuts_single(TIC,
     sectors = np.array([ re.match('TESS Sector (\d+)', text).group(1) for text in tesscuts.table['observation'] ])
 
     # Generate the output names
-    outputnames = np.array([outputdir/Path(f'tess{TIC}_sec{s}.fits') for s in sectors])
+    outputnames = np.array([outputdir/Path(name_pattern.format(TIC=TIC, SECTOR=s)) for s in sectors])
     
     # Skip already downloaded files
     files = np.array([file.exists() for file in outputnames])
@@ -108,8 +115,8 @@ def download_tesscuts_single(TIC,
     # Download the cut target pixel files
     tries = 1
     while True:
-        if tries > max_tries:
-            print(f'Skipped TIC = {TIC}: Maximum number of retries ({max_tries}) exceeded')
+        if tries > max_tries_download:
+            print(f'Skipped TIC = {TIC}: Maximum number of retries ({max_tries_download}) exceeded')
             return
         try:
             tpfs = tesscuts.download_all(cutout_size=imsize)
@@ -133,14 +140,13 @@ def download_tesscuts_single(TIC,
         # Store TIC number in the header
         tpf.header.set('TICID',value=TIC)
         sector = tpf.sector 
-        outputname = f'tess{TIC}_sec{sector}.fits'
-        outputname = outputdir/Path(outputname)
+        outputname = outputdir/Path(name_pattern.format(TIC=TIC, SECTOR=sector))
         counter = 1
         # Attempt to write FITS file
         while True:
-            if counter > 5:
-                print(f'Skipped TIC = {TIC}: Maximum number of retries ({max_counter}) exceeded')
-                return
+            if counter > max_tries_save:
+                print(f'Skipped TIC = {TIC}: Maximum number of retries ({max_tries_save}) exceeded')
+                break
             try:
                 tpf.to_fits(outputname.as_posix(), overwrite=overwrite)
                 break
@@ -148,7 +154,7 @@ def download_tesscuts_single(TIC,
                 # If exception rised
                 ename = e.__class__.__name__
                 print(f'Attempt {counter} when saving FITS file, TIC = {TIC}. Excepion {ename}: {e}')
-                time.sleep(1)
+                time.sleep(0.5)
                 # Count it as one attempt
             counter += 1
 
@@ -193,6 +199,9 @@ def download_tesscuts(TICs, nThreads=1, **kwargs):
 
         # Save images of 100 by 100 pixels
         download_tesscuts('130415266', imsize=100)
+        
+        # Save images with a custom name
+        download_tesscuts(TICs, name_pattern='TICnumber{TIC}SECTORnumber{SECTOR}.fits'
     '''
 
     def run_download_tesscuts_single(TIC,i,n=None, **kwargs ):
@@ -233,7 +242,7 @@ if __name__ == '__main__':
     
     # Directory where to store the TESS images
     outputdir=Path('tpfs')
-    
+
     # Catalog containing the TIC numbers to download
     cat = '/STER/stefano/work/catalogs/TICv8_2+sectors/TIC_OBcandidates_FEROS_2+sectors_bright.csv'
     TICs = pd.read_csv(cat, usecols=['ID'])
