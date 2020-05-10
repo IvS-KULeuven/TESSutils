@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 import re, functools, time
 import numpy as np
-import lightkurve as lk
 from pathlib import Path
 from joblib import Parallel, delayed
+import lightkurve as lk # https://docs.lightkurve.org/about/install.html
 
 def download_tesscuts_single(TIC,
                              outputdir=Path.cwd(),
