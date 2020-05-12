@@ -3,7 +3,7 @@ import re, functools, time
 import numpy as np
 from pathlib import Path
 from joblib import Parallel, delayed
-import lightkurve as lk # https://docs.lightkurve.org/about/install.html
+import lightkurve as lk # Installation: https://docs.lightkurve.org/about/install.html
 
 def download_tesscuts_single(TIC,
                              outputdir=Path.cwd(),
@@ -30,6 +30,8 @@ def download_tesscuts_single(TIC,
         
         - overwrite: bool
             If True, then overwrite the FITS images.
+            Note that the code actually skips the files that havealready been
+            downloaded and so, ovewrite=True should not be needed.
         
         - max_tries_download: int
             Maximum number of attempts to download a same TESS sector.
@@ -56,6 +58,16 @@ def download_tesscuts_single(TIC,
     # Ensure imsize is an integer instance
     if not isinstance(imsize,int):
         raise TypeError('imsize must be an int instance. Ex: imsize=20')
+    # Ensure name_pattern is a string instance
+    if not isinstance(name_pattern,str):
+        raise TypeError('name_pattern must be a string instance containing the characters {TIC} and {SECTOR}. Ex: "tess{TIC}_sec{SECTOR}.fits"')
+    # Ensure name_pattern contains characters {TIC} and {SECTOR} and ends with .fits
+    else:
+        if (not '{TIC}' in name_pattern) \
+        or (not '{SECTOR}' in name_pattern) \
+        or (not name_pattern.endswith('.fits')):
+            raise TypeError('name_pattern must be a string instance containing the characters {TIC} and {SECTOR}. Ex: "tess{TIC}_sec{SECTOR}.fits"')
+
     # Create the output directory if needed
     if outputdir.exists():
         if not outputdir.is_dir():
