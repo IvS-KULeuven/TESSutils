@@ -265,7 +265,7 @@ if __name__ == '__main__':
     # Skip TICs already downloaded
     files = [file.name for file in outputdir.glob(name_pattern.format(TIC='*', SECTOR='*'))]
     return_TIC = lambda name: re.match(name_pattern.format(TIC='(\d+)', SECTOR='\d+'),name).group(1)
-    TICs_skip = pd.Series(files, name='ID', dtype=str).apply(return_TIC)
+    TICs_skip = pd.Series(files, dtype=str).apply(return_TIC)
     TICs = pd.concat([TICs, TICs_skip]).drop_duplicates(keep=False)
     
     # Format as a list of strings
