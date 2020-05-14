@@ -260,17 +260,16 @@ if __name__ == '__main__':
 
     # Catalog containing the TIC numbers to download
     cat = '/STER/stefano/work/catalogs/TICv8_2+sectors/TIC_OBcandidates_FEROS_2+sectors_bright.csv'
-    TICs = pd.read_csv(cat, usecols=['ID'])
+    TICs = pd.read_csv(cat, usecols=['ID'], squeeze=True)
 
     # Skip TICs already downloaded
     files = [file.name for file in outputdir.glob(name_pattern.format(TIC='*', SECTOR='*'))]
-    skip = pd.DataFrame({'file':files})
     return_TIC = lambda name: re.match(name_pattern.format(TIC='(\d+)', SECTOR='\d+'),name).group(1)
-    skip['ID'] = skip['file'].apply(return_TIC).astype(int)
-    TICs = TICs.merge(skip[['ID']], on='ID', how='outer', indicator=True).query('_merge == "left_only"')[['ID']] 
+    skip = pd.Series(files, name='ID', dtype=str).apply(return_TIC).astype(int)
+    TICs = pd.merge(TICs, skip, how='outer', indicator=True).query('_merge == "left_only"') 
 
     # Format as a list of strings
-    TICs = TICs.astype(str).values.flatten().tolist()
+    TICs = TICs['ID'].astype(str).tolist()
 
     # Start the program
     download_tesscuts(TICs, outputdir=outputdir, nThreads=1, name_pattern=name_pattern)
