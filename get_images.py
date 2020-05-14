@@ -265,8 +265,8 @@ if __name__ == '__main__':
     # Skip TICs already downloaded
     files = [file.name for file in outputdir.glob(name_pattern.format(TIC='*', SECTOR='*'))]
     return_TIC = lambda name: re.match(name_pattern.format(TIC='(\d+)', SECTOR='\d+'),name).group(1)
-    skip = pd.Series(files, name='ID', dtype=str).apply(return_TIC).astype(int)
-    TICs = pd.merge(TICs, skip, how='outer', indicator=True).query('_merge == "left_only"') 
+    TICs_skip = pd.Series(files, name='ID', dtype=str).apply(return_TIC).astype(int)
+    TICs = pd.merge(TICs, TICs_skip, how='outer', indicator=True).query('_merge == "left_only"') 
 
     # Format as a list of strings
     TICs = TICs['ID'].astype(str).tolist()
