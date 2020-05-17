@@ -136,8 +136,11 @@ def update_dic(dic, update, addkey=False):
             dic[k] = update_dic(dic.get(k, {}), v) 
         else:
             if not addkey:
-                if k in dic: 
-                    dic[k] = v
+                try:
+                    if k in dic: 
+                        dic[k] = v
+                except TypeError:
+                    pass
             else:
                 dic[k] = v
     return dic 
