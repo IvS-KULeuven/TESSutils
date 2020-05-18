@@ -13,12 +13,15 @@ def collect_corrected_lc(outputdir=Path('lc_corrected'),
                          updates=[],
                          TICs='all'):
 
+    ### Validate arguments  
+  
     # Ensure file_pattern is a string instance that ends with ".pickled"
     if not isinstance(file_pattern ,str):
         raise TypeError('file_pattern must be a string instance that ends with ".pickled"')
     else:
         if (not file_pattern .endswith('.pickled')):
             raise TypeError('file_pattern must be a string instance that ends with ".pickled"')
+
     # Ensure tic_regex is a string instance of a regular expression that group the TIC number and ends with ".pickled'
     if not isinstance(tic_regex ,str):
         raise TypeError('tic_regex must be string instance of a regular expression that group the TIC number as "(\d+)" and ends with ".pickled". Ex: "tess(\d+)_sec\d+_corrected.pickled"')
@@ -26,6 +29,7 @@ def collect_corrected_lc(outputdir=Path('lc_corrected'),
         if (not tic_regex.endswith('.pickled')) \
         or (not '(\d+)' in tic_regex):
             raise TypeError('tic_regex must be string instance of a regular expression that group the TIC number as "(\d+)" and ends with ".pickled". Ex: "tess(\d+)_sec\d+_corrected.pickled"')
+    
     # Ensure sector_regex is a string instance that ends with ".pickled"
     if not isinstance(sector_regex ,str):
         raise TypeError('sector_regex must be a string instance that ends with ".pickled"')
@@ -33,6 +37,7 @@ def collect_corrected_lc(outputdir=Path('lc_corrected'),
         if (not sector_regex .endswith('.pickled')) \
         or (not '(\d+)' in sector_regex):
             raise TypeError('sector_regex must be string instance of a regular expression that group the sector number as "(\d+)" and ends with ".pickled". Ex: "tess\d+_sec(\d+)_corrected.pickled"')
+    
     # Ensure outputname_pattern is a string instance that contains {TIC} and ends with ".pickled"
     if not isinstance(outputname_pattern ,str):
         raise TypeError('outputname_pattern must be a string instance that contains {TIC} and ends with ".pickled". Ex: "tess{TIC}_allsectors_corrected.pickled"')
@@ -42,9 +47,11 @@ def collect_corrected_lc(outputdir=Path('lc_corrected'),
             raise TypeError('outputname_pattern must be a string instance that contains {TIC} and ends with ".pickled". Ex: "tess{TIC}_allsectors_corrected.pickled"')
     if not isinstance(inputdir,Path):
         raise TypeError('inputdir must be a Path instance. Ex: outputdir=pathlib.Path.cwd()')
+    
     # Ensure outputdir and inputdir are a Path instance
     if not isinstance(outputdir,Path):
         raise TypeError('outputdir must be a Path instance. Ex: outputdir=pathlib.Path.cwd()')
+    
     # Create the output directory if needed
     if outputdir.exists():
         if not outputdir.is_dir():
@@ -52,6 +59,8 @@ def collect_corrected_lc(outputdir=Path('lc_corrected'),
     else:
         outputdir.mkdir()
         
+    ### Beginning of the actual program
+    
     # Get the filepaths and filenames of the files to process 
     filepaths = [file for file in inputdir.glob(file_pattern)]
     filenames = [file.name for file in filepaths]
