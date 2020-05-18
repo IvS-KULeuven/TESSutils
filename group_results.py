@@ -11,13 +11,8 @@ def collect_corrected_lc(outputdir=Path('lc_corrected'),
                          sector_regex = 'tess\d+_sec(\d+)_corrected.pickled',
                          outputname_pattern = 'tess{TIC}_allsectors_corrected.pickled',
                          updates=[],
-                         TICs=None):
+                         TICs='all'):
 
-    # Ensure outputdir and inputdir are a Path instance
-    if not isinstance(outputdir,Path):
-        raise TypeError('outputdir must be a Path instance. Ex: outputdir=pathlib.Path.cwd()')
-    if not isinstance(inputdir,Path):
-        raise TypeError('inputdir must be a Path instance. Ex: outputdir=pathlib.Path.cwd()')
     # Ensure file_pattern is a string instance that ends with ".pickled"
     if not isinstance(file_pattern ,str):
         raise TypeError('file_pattern must be a string instance that ends with ".pickled"')
@@ -45,35 +40,47 @@ def collect_corrected_lc(outputdir=Path('lc_corrected'),
         if (not outputname_pattern .endswith('.pickled')) \
         or (not '{TIC}' in outputname_pattern):
             raise TypeError('outputname_pattern must be a string instance that contains {TIC} and ends with ".pickled". Ex: "tess{TIC}_allsectors_corrected.pickled"')
-
+    if not isinstance(inputdir,Path):
+        raise TypeError('inputdir must be a Path instance. Ex: outputdir=pathlib.Path.cwd()')
+    # Ensure outputdir and inputdir are a Path instance
+    if not isinstance(outputdir,Path):
+        raise TypeError('outputdir must be a Path instance. Ex: outputdir=pathlib.Path.cwd()')
+    # Create the output directory if needed
+    if outputdir.exists():
+        if not outputdir.is_dir():
+            raise ValueError('The outputdir exist but is not a directory. It must be a directory')
+    else:
+        outputdir.mkdir()
+        
     # Get the filepaths and filenames of the files to process 
     filepaths = [file for file in inputdir.glob(file_pattern)]
     filenames = [file.name for file in filepaths]
-    df = pd.DataFrame({'filename':filenames, 'filepath':filepaths})
+    files = pd.DataFrame({'filename':filenames, 'filepath':filepaths})
 
-    # Initialize a column for the TIC and sector number
-    df['tic'] = -1
-    df['sector'] = -1
-    # Read the TIC and Sector info from the filename and use that info to sort
-    df['tic'] = df['filename'].apply(lambda name: re.match(tic_regex,name).group(1))
-    df['sector'] = df['filename'].apply(lambda name: re.match(sector_regex,name).group(1))
-    df['tic'] = df['tic'].astype('int64')
-    df['sector'] = df['sector'].astype('int32')
-    df.sort_values(by=['tic','sector'], inplace=True)
+    # Initialize columns for the TIC and sector number
+    files['tic'] = -1
+    files['sector'] = -1
+    # Read the TIC number info from the filename and use that info to sort
+    return_TIC = lambda name: re.match(tic_regex,name).group(1)
+    files['tic'] = files['filename'].apply(return_TIC)
+    files['tic'] = files['tic'].astype('int64')
+    # Read the Sector number info from the filename and use that info to sort
+    return_SECTOR = lambda name: re.match(sector_regex,name).group(1)
+    files['sector'] = files['filename'].apply(return_SECTOR)
+    files['sector'] = files['sector'].astype('int32')
+    # Sort by TIC and sector number
+    files.sort_values(by=['tic','sector'], inplace=True)
 
-    if not TICs is None:
+    # Select the TIC number to process
+    if TICs != 'all':
         if isinstance(TICs,str):
             TIC = TICs
-            df = df.query(f'tic == {TIC}')  
+            files = files.query(f'tic == {TIC}')  
         if isinstance(TICs,list):
-            # dfs = []
-            # for TIC in TICs:
-            #     dfs.append( df.query(f'tic == {TIC}') )
-            # df = pd.concat(dfs)
-            df = pd.concat([df.query(f'tic == {TIC}') for TIC in TICs])
+            files = pd.concat([files.query(f'tic == {TIC}') for TIC in TICs])
 
     # Group filenames by the TIC number
-    groups = df.groupby('tic')
+    groups = files.groupby('tic')
 
     # Loop over each TIC group (i.e., collect the sectors for a same TIC)
     counter = 1
@@ -147,35 +154,36 @@ def update_dic(dic, update, addkey=False):
 
 if __name__ == '__main__':
 
-    # Custom run
-
+    ### Custom run 1: __Minimal__
+#     collect_corrected_lc()
+    
+    
+    ### Custom run 2: __Very tailored__
+    
     # I/O directories
-    outputdir=Path('/STER/stefano/work/catalogs/TICv8_CVZ/South/OBFA_candidates/tpfs/corrected_pickled_slurm_new/lc_corrected/sector_grouped_prewhitening_set')
-    inputdir = Path('/STER/stefano/work/catalogs/TICv8_CVZ/South/OBFA_candidates/tpfs/corrected_pickled_slurm_new/lc_corrected')
+    inputdir = Path('lc_corrected')
+    outputdir=Path('lc_corrected/sector_grouped')
     
-    # Glob pattern used to search the pickled files to be grouped
+    # Pattern: Glob expression used to search the pickled files to be grouped
     file_pattern = 'tess*_sec*_corrected.pickled'
-    
-    # Regular expression used to identify the TIC number from the filename
+    # Pattern: Regular expression used to identify the TIC number from the filename
     tic_regex = 'tess(\d+)_sec\d+_corrected.pickled'
-    
-    # Regular expression used to identify the TESS sector number from the filename
+    # Pattern: Regular expression used to identify the TESS sector number from the filename
     sector_regex = 'tess\d+_sec(\d+)_corrected.pickled'
-    
-    # Pattern to save the new pickle files. {TIC} will be replaced for TIC number
+    # Pattern: Python f-string used to save the new pickle files. Characters {TIC} will automatically be replaced for the TIC number
     outputname_pattern = 'tess{TIC}_allsectors_corrected.pickled'
 
     # Set to None values that can cause problems when unpickling
-    updates = [{'pca_used':{'rc':None}},
-               {'pca_used':{'dm':None}},
-               {'pca_all':{'rc':None}},
-               {'pca_all':{'dm':None}},
-               {'fit':{'TargetStar':None}},
-               {'fit':{'Neighbours':None}},
-               {'fit':{'Plane':None}}]
+    updates = [{'pca_used':{'rc':None}},    #Corrector object instance from LightKurve
+               {'pca_used':{'dm':None}},    #Desing matrix object instance from LightKurve
+               {'pca_all':{'rc':None}},     #Corrector object instance from LightKurve
+               {'pca_all':{'dm':None}},     #Desing matrix object instance from LightKurve
+               {'fit':{'TargetStar':None}}, #Model object instance from Astropy
+               {'fit':{'Neighbours':None}}, #Model object instance from Astropy
+               {'fit':{'Plane':None}}]      #Model object instance from Astropy
 
     # TICs to consider
-    TICs = '33879968'
+    TICs = 'all'
     
     # Group the pickle files
     collect_corrected_lc(outputdir=outputdir,
