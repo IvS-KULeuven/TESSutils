@@ -163,11 +163,11 @@ def update_dic(dic, update, addkey=False):
 
 if __name__ == '__main__':
 
-    ### Custom run 1: __Minimal__
-#     collect_corrected_lc()
+    ### CUSTOM RUN 1: MINIMAL ###
+
+    #     collect_corrected_lc()
     
-    
-    ### Custom run 2: __Very tailored__
+    ### CUSTOM RUN 2: VERY TAILORED ###
     
     # I/O directories
     inputdir = Path('lc_corrected')
@@ -183,13 +183,13 @@ if __name__ == '__main__':
     outputname_pattern = 'tess{TIC}_allsectors_corrected.pickled'
 
     # Set to None values that can cause problems when unpickling
-    updates = [{'pca_used':{'rc':None}},    #Corrector object instance from LightKurve
-               {'pca_used':{'dm':None}},    #Desing matrix object instance from LightKurve
-               {'pca_all':{'rc':None}},     #Corrector object instance from LightKurve
-               {'pca_all':{'dm':None}},     #Desing matrix object instance from LightKurve
-               {'fit':{'TargetStar':None}}, #Model object instance from Astropy
-               {'fit':{'Neighbours':None}}, #Model object instance from Astropy
-               {'fit':{'Plane':None}}]      #Model object instance from Astropy
+    updates = [{'pca_used':{'rc':None}},    #LightKurve object corrector not compatible with current IvSPythonRepository
+               {'pca_used':{'dm':None}},    #LightKurve object "desing matrix" not compatible with current IvSPythonRepository
+               {'pca_all':{'rc':None}},     #LightKurve object corrector not compatible with current IvSPythonRepository
+               {'pca_all':{'dm':None}},     #LightKurve object "desing matrix" not compatible with current IvSPythonRepository
+               {'fit':{'TargetStar':None}}, #Astropy object Model not compatible with current IvSPythonRepository
+               {'fit':{'Neighbours':None}}, #Astropy object Model not compatible with current IvSPythonRepository
+               {'fit':{'Plane':None}}]      #Astropy object Model not compatible with current IvSPythonRepository
 
     # TICs to consider
     TICs = 'all'
