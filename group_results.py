@@ -13,7 +13,7 @@ def collect_corrected_lc(outputdir=Path('lc_corrected'),
                          updates=[],
                          TICs='all'):
 
-    ### Validate arguments  
+    ### Validate arguments ###
   
     # Ensure file_pattern is a string instance that ends with ".pickled"
     if not isinstance(file_pattern ,str):
@@ -59,7 +59,7 @@ def collect_corrected_lc(outputdir=Path('lc_corrected'),
     else:
         outputdir.mkdir()
         
-    ### Beginning of the actual program
+    ### Beginning of actual program ###
     
     # Get the filepaths and filenames of the files to process 
     filepaths = [file for file in inputdir.glob(file_pattern)]
@@ -128,16 +128,22 @@ def collect_corrected_lc(outputdir=Path('lc_corrected'),
 
 def update_dic(dic, update, addkey=False): 
     '''
-    Based on
+    Purpose
     --------
+    Update the value of a dictionary key including cases of nested dictionaries
+    
+    Based on the following original code
+    -------------------------------------
     https://stackoverflow.com/questions/3232943/update-value-of-a-nested-dictionary-of-varying-depth/3233356#3233356
 
     Parameters
     ----------
     dic : dict()
         Original dictionary to be updated.
+    
     update : dict()
         New dictionary containing the updated values.
+    
     add_key : bool, optional
         If update contains keys not in dic, do not add those nwe keys to dict.
         The default is False.
@@ -146,6 +152,18 @@ def update_dic(dic, update, addkey=False):
     -------
     dic : dictionary
         updated dictionary.
+        
+    Example
+    -------
+    # Example 1: Update regular dictionary
+    dic = {'A':0,'B':1}
+    update = {'B':-1}
+    print(update_dic(dic,update))
+    
+    # Example 2: Update nested dictionary
+    dic = {'A':{'AA':0},'B':1}
+    update = {'A':{'AA':1}}
+    print(update_dic(dic,update))
     '''
     for k, v in update.items(): 
         if isinstance(v, collections.abc.Mapping):
