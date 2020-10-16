@@ -967,7 +967,16 @@ if __name__ == '__main__':
     # RUN 4 (PARALLEL)
     inputdir = Path('/STER/stefano/work/catalogs/TICv8_CVZ/South/OBFA_candidates/tpfs')
     outputdir = Path('/STER/stefano/work/catalogs/TICv8_CVZ/South/OBFA_candidates/tpfs/corrected_pickled_slurm_new/lc_corrected')
-    inputfiles = inputdir.glob('*fits')
+    
+    # Find all the files
+    #inputfiles = inputdir.glob('*fits')
+    
+    # Find all files that have not been processed
+    inputfiles = [ f for f in inputdir.glob('*fits') ]
+    donefiles  = [ f for f in outputdir.glob('tess*_corrected.pickled') ]
+    inputfiles = [ f for f in inputfiles if f.name.replace('.fits','_corrected.pickled') not in donefiles ]
+    # TODO: To make the recognition of the in/output patterns easier, code those patern as arguments of the functions insted of hard coding them
+    
     print('HERE WE GO!')
     num_cores = 40
     time1 = time.perf_counter()
