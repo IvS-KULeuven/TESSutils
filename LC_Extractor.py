@@ -973,7 +973,7 @@ if __name__ == '__main__':
     
     # Find all files that have not been processed
     inputfiles = [ f for f in inputdir.glob('*fits') ]
-    donefiles  = [ f for f in outputdir.glob('tess*_corrected.pickled') ]
+    donefiles  = [ f.name for f in outputdir.glob('tess*_corrected.pickled') ]
     inputfiles = [ f for f in inputfiles if f.name.replace('.fits','_corrected.pickled') not in donefiles ]
     # TODO: To make the recognition of the in/output patterns easier, code those patern as arguments of the functions insted of hard coding them
     
