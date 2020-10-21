@@ -12,7 +12,8 @@ def download_tesscuts_single(TIC,
                              max_tries_download=10,
                              max_tries_save=2,
                              max_tries_query=3,
-                             name_pattern='tess{TIC}_sec{SECTOR}.fits'):
+                             name_pattern='tess{TIC}_sec{SECTOR}.fits',
+                             onlysectors=None):
     '''
     Purpose:
         Downoad the TESS cut for all the available sectors given the TIC number
@@ -109,7 +110,15 @@ def download_tesscuts_single(TIC,
     
     # Get the sector numbers
     sectors = np.array([ re.match('TESS Sector (\d+)', text).group(1) for text in tesscuts.table['observation'] ])
-
+    
+    # Filter only requested sectors
+    if not onlysectors is None:
+        ind =[True if sec in onlysectors else False for sec in sectors.astype('int32')]
+        tesscuts = tesscuts[ind]
+        
+    # Get the sector numbers
+    sectors = np.array([ re.match('TESS Sector (\d+)', text).group(1) for text in tesscuts.table['observation'] ])
+    
     # Generate the output names
     outputnames = np.array([outputdir/Path(name_pattern.format(TIC=TIC, SECTOR=s)) for s in sectors])
     
@@ -271,5 +280,8 @@ if __name__ == '__main__':
     # Format as a list of strings
     TICs = TICs.tolist()
 
+    # Download only this sectors
+    onlysectors = np.arange(1,14) # 1..13
+
     # Start the program
-    download_tesscuts(TICs, outputdir=outputdir, nThreads=1, name_pattern=name_pattern)
+    download_tesscuts(TICs, outputdir=outputdir, nThreads=1, name_pattern=name_pattern,onlysectors=onlysectors)
