@@ -13,7 +13,8 @@ def collect_corrected_lc(outputdir=Path('lc_corrected'),
                          outputname_pattern = 'tess{TIC}_allsectors_corrected.pickled',
                          updates=[],
                          TICs='all',
-                         threads=1):
+                         threads=1,
+                         sectors=None):
 
     ### Validate arguments ###
   
@@ -104,6 +105,12 @@ def collect_corrected_lc(outputdir=Path('lc_corrected'),
 
             # Loop over each row of the group (i.e. loop over each sector)
             for row in group.iloc:
+              
+                # Choose sectors to group
+                if not sectors is None:
+                    if not row['sector'] in sectors:
+                        continue
+
                 # Unpickle
                 filepath = row['filepath'].as_posix()
                 with open(filepath, 'rb') as picklefile:
@@ -187,6 +194,8 @@ if __name__ == '__main__':
     #     collect_corrected_lc()
     
     ### CUSTOM RUN 2: VERY TAILORED ###
+
+    import numpy as np
     
     # I/O directories
     inputdir = Path('lc_corrected')
@@ -212,6 +221,9 @@ if __name__ == '__main__':
 
     # TICs to consider
     TICs = 'all'
+
+    # Sectors to consider
+    sectors = np.arange(1,14) # 1..13
     
     # Group the pickle files
     collect_corrected_lc(outputdir=outputdir,
@@ -222,4 +234,5 @@ if __name__ == '__main__':
                          outputname_pattern=outputname_pattern,
                          updates=updates,
                          TICs=TICs,
-                         threads=1)
+                         threads=1,
+                         sectors=sectors)
