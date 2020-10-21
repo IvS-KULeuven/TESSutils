@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 import pickle, re
 import pandas as pd
-from pathlib import Path
 import collections.abc 
+from pathlib import Path
+from joblib import Parallel, delayed
 
 def collect_corrected_lc(outputdir=Path('lc_corrected'),
                          inputdir = Path.cwd(),
@@ -11,7 +12,8 @@ def collect_corrected_lc(outputdir=Path('lc_corrected'),
                          sector_regex = 'tess\d+_sec(\d+)_corrected.pickled',
                          outputname_pattern = 'tess{TIC}_allsectors_corrected.pickled',
                          updates=[],
-                         TICs='all'):
+                         TICs='all',
+                         threads=1):
 
     ### Validate arguments ###
   
@@ -91,40 +93,39 @@ def collect_corrected_lc(outputdir=Path('lc_corrected'),
     # Group filenames by the TIC number
     groups = files.groupby('tic')
 
-    # Loop over each TIC group (i.e., collect the sectors for a same TIC)
-    counter = 1
-    for tic,group in groups:
+    def grouping(tic,group,igroup=None):
 
-        # Print process
-        print(f'Grouping TIC {tic}: [{counter}/{groups.ngroups}]')
-        
-        # List to store the summaries of all and each sectors
-        results = [] 
+            # Print process
+            if igroup is not None:
+                print(f'Grouping TIC {tic}: [{igroup}/{groups.ngroups}]')
 
-        # Loop over each row of the group (i.e. loop over each sector)
-        for row in group.iloc:
-            # Unpickle
-            filepath = row['filepath'].as_posix()
-            with open(filepath, 'rb') as picklefile:
-                try:
-                    result = pickle.load(picklefile)
-                except EOFError as e:
-                    print('Skipped: file {filepath} seems to to empty.')
-                    
-            # Optionally, update result
-            for update in updates:
-                result = update_dic(result,update)
-                    
-            # Collect
-            results.append(result)
-            
-        # Save to a new pickle file
-        outputname = outputdir/Path(outputname_pattern.format(TIC=tic))
-        with open(outputname.as_posix(), 'wb') as file: 
-            pickle.dump(results, file)
+            # List to store the summaries of all and each sectors
+            results = [] 
 
-        # Update counter
-        counter += 1
+            # Loop over each row of the group (i.e. loop over each sector)
+            for row in group.iloc:
+                # Unpickle
+                filepath = row['filepath'].as_posix()
+                with open(filepath, 'rb') as picklefile:
+                    try:
+                        result = pickle.load(picklefile)
+                    except EOFError as e:
+                        print('Skipped: file {filepath} seems to to empty.')
+
+                # Optionally, update result
+                for update in updates:
+                    result = update_dic(result,update)
+
+                # Collect
+                results.append(result)
+
+            # Save to a new pickle file
+            outputname = outputdir/Path(outputname_pattern.format(TIC=tic))
+            with open(outputname.as_posix(), 'wb') as file: 
+                pickle.dump(results, file)
+
+    Parallel(n_jobs=threads)(delayed(grouping)(tic,group,igroup=i) for i,(tic,group) in enumerate(groups))
+
 
 def update_dic(dic, update, addkey=False): 
     '''
@@ -189,7 +190,7 @@ if __name__ == '__main__':
     
     # I/O directories
     inputdir = Path('lc_corrected')
-    outputdir=Path('lc_corrected/sector_grouped')
+    outputdir=Path('sector_grouped')
     
     # Pattern: Glob expression used to search the pickled files to be grouped
     file_pattern = 'tess*_sec*_corrected.pickled'
@@ -220,4 +221,5 @@ if __name__ == '__main__':
                          sector_regex=sector_regex,
                          outputname_pattern=outputname_pattern,
                          updates=updates,
-                         TICs=TICs)
+                         TICs=TICs,
+                         threads=1)
