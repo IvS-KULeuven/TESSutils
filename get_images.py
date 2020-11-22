@@ -27,7 +27,7 @@ def download_tesscuts_single(TIC,
             If the directory does not exist, it will be created
             
         - imsize: int
-            Size in pixels if the square images to be downloaded.
+            Size in pixels of the square images to be downloaded.
         
         - overwrite: bool
             If True, then overwrite the FITS images.
