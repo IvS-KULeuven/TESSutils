@@ -949,7 +949,7 @@ if __name__ == '__main__':
 
     # RUN 3: PARALLEL run
     outputdir = Path('processed')
-    fitsfile = Path('tess139369511_sec3.fits')
+    fitsfile = Path('tpfs')
         
     # Find all files that have not been processed
     inputfiles = [ f for f in inputdir.glob('*fits') ]
