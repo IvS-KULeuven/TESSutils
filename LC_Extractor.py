@@ -14,7 +14,9 @@ from astroquery.mast import Catalogs
 from joblib import Parallel, delayed
 from IPython import embed
 
+########################################################################
 ### Supporting functions of the main function `extract_light_curve()`
+########################################################################
 
 def threshold_mask(image, threshold=3, reference_pixel='center'):
     """
@@ -685,7 +687,9 @@ def print_err(err_msg, prepend=''):
     print(err_msg)
     return err_msg
 
+################################################################
 ### Main function to extract light curves from the TESS images
+################################################################
 
 def extract_light_curve(fits_filename,outputdir,return_msg=True):
 
@@ -928,61 +932,38 @@ if __name__ == '__main__':
     print = functools.partial(print, flush=True) # Unbuffer print as default
 
     
-    # RUN 1
-    # outputdir = Path('/lhome/stefano/Documents/work/refinemont_lc_extraction/tpfs_test/corrected')
-    # fitsfile = Path('/lhome/stefano/Documents/work/refinemont_lc_extraction/tpfs_test/tess150166721_sec6.fits')
+    # RUN 1: Get light curves for all TPFs in the folder `tpfs` and store results in `processed`
+    # outputdir = Path('tpfs')
+    # fitsfile = Path('processed')
     # msg = extract_light_curve(fitsfile,outputdir)
     # print(msg)
 
-    # RUN 2
-    # inputdir = Path('/lhome/stefano/Documents/work/refinemont_lc_extraction/tpfs_test')
-    # outputdir = Path('/lhome/stefano/Documents/work/refinemont_lc_extraction/tpfs_test/corrected')
+    # RUN 2: Same as RUN 1 but skip .fits files with the characters "corrected" in its filename
+    # outputdir = Path('tpfs')
+    # fitsfile = Path('processed')
     # for file in inputdir.glob('*fits'):
     #     if not 'corrected' in file.stem:
     #         msg = extract_light_curve(file,outputdir)
     #         print(msg)
 
-    # # RUN 3 
-    # inputdir = Path('/lhome/stefano/Documents/work/refinemont_lc_extraction/tpfs_test')
-    # outputdir = Path('/lhome/stefano/Documents/work/refinemont_lc_extraction/tpfs_test/corrected')
-    # files = [file for file in inputdir.glob('tess*fits')]
-    # donefiles = [file.name for file in outputdir.glob('tess*corrected.fits')]
-    # nfiles = len(files)
-    # nchunks = 5
-    # chunksize = np.ceil(nfiles/nchunks).astype(int)
-    # chunks = [files[i:i + chunksize] for i in range(0, len(files), chunksize)]
-    # chunk = chunks[0] # <<<------
-    # for i,file in enumerate(chunk):
-    #     # Check if the file is already corrected
-    #     if file.stem+'_corrected.fits' in donefiles:
-    #         print(f'Already corredcted: {file.name}. Skipped: i+1={i+1}')
-    #         continue
-    #     #if i < 415:
-    #     print(f'Manually skipped: i+1={i+1}')
-    #     #    continue
-    #     msg = extract_light_curve(file,outputdir)
-    #     progress = f'.........[{i+1}/{len(chunk)}]'
-    #     print(msg, progress)
 
-    # RUN 4 (PARALLEL)
-    inputdir = Path('/STER/stefano/work/catalogs/TICv8_CVZ/South/OBFA_candidates/tpfs')
-    outputdir = Path('/STER/stefano/work/catalogs/TICv8_CVZ/South/OBFA_candidates/tpfs/corrected_pickled_slurm_new/lc_corrected')
-    
-    # Find all the files
-    #inputfiles = inputdir.glob('*fits')
-    
+    # RUN 3: PARALLEL run
+    outputdir = Path('tpfs')
+    fitsfile = Path('processed')
+        
     # Find all files that have not been processed
     inputfiles = [ f for f in inputdir.glob('*fits') ]
     donefiles  = [ f.name for f in outputdir.glob('tess*_corrected.pickled') ]
     inputfiles = [ f for f in inputfiles if f.name.replace('.fits','_corrected.pickled') not in donefiles ]
-    # TODO: To make the recognition of the in/output patterns easier, code those patern as arguments of the functions insted of hard coding them
     
-    print('HERE WE GO!')
     num_cores = 40
+
+    # Time execution
     time1 = time.perf_counter()
     msgs = Parallel(n_jobs=num_cores)(delayed(extract_light_curve)(file,outputdir) for file in inputfiles)
     time2 = time.perf_counter()
-    # Write the log to output
+
+    # Write the log
     outputfile = outputdir/Path('output.txt')
     outputfile.touch()
     with open(outputfile.as_posix(), 'w') as f: 
