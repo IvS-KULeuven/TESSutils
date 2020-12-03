@@ -933,14 +933,14 @@ if __name__ == '__main__':
 
     
     # RUN 1: Get light curves for all TPFs in the folder `tpfs` and store results in `processed`
-    # outputdir = Path('tpfs')
-    # fitsfile = Path('processed')
+    # otputdir = Path('processed')
+    # fitsfile = Path('tess139369511_sec3.fits')
     # msg = extract_light_curve(fitsfile,outputdir)
     # print(msg)
 
     # RUN 2: Same as RUN 1 but skip .fits files with the characters "corrected" in its filename
-    # outputdir = Path('tpfs')
-    # fitsfile = Path('processed')
+    # otputdir = Path('processed')
+    # fitsfile = Path('tess139369511_sec3.fits')
     # for file in inputdir.glob('*fits'):
     #     if not 'corrected' in file.stem:
     #         msg = extract_light_curve(file,outputdir)
@@ -948,8 +948,8 @@ if __name__ == '__main__':
 
 
     # RUN 3: PARALLEL run
-    outputdir = Path('tpfs')
-    fitsfile = Path('processed')
+    outputdir = Path('processed')
+    fitsfile = Path('tess139369511_sec3.fits')
         
     # Find all files that have not been processed
     inputfiles = [ f for f in inputdir.glob('*fits') ]
