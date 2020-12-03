@@ -933,13 +933,13 @@ if __name__ == '__main__':
 
     
     # RUN 1: Get light curves for all TPFs in the folder `tpfs` and store results in `processed`
-    # otputdir = Path('processed')
+    # outputdir = Path('processed')
     # fitsfile = Path('tess139369511_sec3.fits')
     # msg = extract_light_curve(fitsfile,outputdir)
     # print(msg)
 
     # RUN 2: Same as RUN 1 but skip .fits files with the characters "corrected" in its filename
-    # otputdir = Path('processed')
+    # outputdir = Path('processed')
     # fitsfile = Path('tess139369511_sec3.fits')
     # for file in inputdir.glob('*fits'):
     #     if not 'corrected' in file.stem:
