@@ -96,7 +96,7 @@ def extract_stitched_lcs_single(TIC,
         '''Check `NamePattern_Output_StitchedLC` contains characters {TIC}'''
         if not '{TIC}' in NamePattern_Output_StitchedLC:
             raise TypeError('NamePattern_Output_StitchedLC must be a string instance containing the characters {TIC} and ending with ".csv". Ex: "lc_tess{TIC}_corrected_stitched.csv"')
-    def NamePattern_Output_StitchedLC_ends_in_csv_characters(NamePattern_InputFile):
+    def NamePattern_Output_StitchedLC_ends_in_csv_characters(NamePattern_Output_StitchedLC):
         '''Check `NamePattern_InputFile` ends with .csv'''
         if not NamePattern_Output_StitchedLC.endswith('.csv'):
             raise TypeError('NamePattern_Output_StitchedLC must be a string instance containing the characters {TIC} and ending with ".csv". Ex: "lc_tess{TIC}_corrected_stitched.csv"')
