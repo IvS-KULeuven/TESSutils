@@ -70,7 +70,7 @@ def extract_stitched_lcs_single(TIC,
         if not isinstance(InputDir,Path):
             raise TypeError('InputDir must be a Path instance. Ex: outputdir=pathlib.Path.cwd()')
     
-    def InputDir_is_Path(OutputDir):
+    def OnputDir_is_Path(OutputDir):
         '''Check `OutputDir` is a Path instance'''
         if not isinstance(OutputDir,Path):
             raise TypeError('outputdir must be a Path instance. Ex: outputdir=pathlib.Path.cwd()')
@@ -108,7 +108,7 @@ def extract_stitched_lcs_single(TIC,
     # Check the arguments are correct
     TIC_is_str(TIC)
     InputDir_is_Path(InputDir)
-    InputDir_is_Path(OutputDir)
+    OnputDir_is_Path(OutputDir)
     NamePattern_InputFile_is_str(NamePattern_InputFile)
     NamePattern_InputFile_is_has_TIC_characters(NamePattern_InputFile)
     NamePattern_InputFile_ends_in_pickled_characters(NamePattern_InputFile)
